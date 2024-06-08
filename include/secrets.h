@@ -1,0 +1,4 @@
+#define WIFI_SSID "ALLO1ED98"
+#define WIFI_PASSWORD "1891163999"
+#define OTA_NAME "test"
+#define OTA_PASSWORD "1"
