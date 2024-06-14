@@ -5,7 +5,8 @@
 .vscode/ipch
 .vscode/tasks.json 
 .vscode
-.include/secrets.h
+include/secrets.h
+include/secrets.h
 
 # Prerequisites
 *.d
@@ -39,3 +40,4 @@
 *.exe
 *.out
 *.app
+
