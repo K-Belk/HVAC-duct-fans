@@ -10,8 +10,11 @@ const char* password = WIFI_PASSWORD;
 
 IPAddress staticIP(STATIC_IP_ADDRESS);
 
-Fan masterBedroomFanNorth(18, 19, 5000, 0, 8);
-Fan masterBedroomFanSouth(17, 5, 5000, 1, 8);
+Fan masterBedroomFanNorth(12, 14, 5000, 0, 8);
+Fan masterBedroomFanSouth(27, 26, 5000, 1, 8);
+
+// MQTT topics to subscribe to
+std::vector<String> subTopics = {"HA/thermostat", "HA/masterBed/fanControl", "device/masterBed/tempHumid"};
 
 long lastMsg = 0; // Last time a message was sent to the MQTT broker
 
@@ -33,7 +36,7 @@ char* state = new char[32]; // State of the thermostat
  * @param payload The payload of the MQTT message.
  * @param length The length of the payload.
  */
-void callback(char* topic, byte* payload, unsigned int length)
+void messageCallback(char* topic, byte* payload, unsigned int length)
 {
   JsonDocument doc;
   deserializeJson(doc, payload, length);
@@ -53,14 +56,12 @@ void callback(char* topic, byte* payload, unsigned int length)
     doc["message"] = "fanControl";
     masterBedroomFanNorth.parseMessage(doc);
     masterBedroomFanSouth.parseMessage(doc);
-    Serial.println("Fan control message received");
   }
   else if (strcmp(topic, "device/masterBed/tempHumid") == 0)
   {
     doc["message"] = "roomTemp";
     masterBedroomFanNorth.parseMessage(doc);
     masterBedroomFanSouth.parseMessage(doc);
-    // Serial.println("Room temperature message received");
   }
   else
   {
@@ -85,7 +86,7 @@ void setup(void) {
   setupWiFi(ssid, password, staticIP); // Setup WiFi connection
   setupOTA(); // Setup OTA updates
 
-  setupMQTT(mqttServer, mqttPort, callback); // Setup MQTT client
+  setupMQTT(mqttServer, mqttPort, messageCallback); // Setup MQTT client
 }
 
 /**
@@ -99,7 +100,7 @@ void loop(void) {
 
   server.handleClient(); // Handle client requests
   ElegantOTA.loop(); // Perform OTA updates
-  mqttLoop(); // Handle MQTT messages
+  mqttLoop(subTopics); // Handle MQTT messages
 
   if (now - lastMsg > 1000) {
     lastMsg = now;
@@ -110,4 +111,11 @@ void loop(void) {
   masterBedroomFanNorth.loop(currentTemp); // Update the state of the north fan
   masterBedroomFanSouth.loop(currentTemp); // Update the state of the south fan
   
+  // String north; // String to store the north fan message
+  // serializeJsonPretty(masterBedroomFanNorth.pubMessage, north); // Serialize the north fan message to JSON format
+  // String south; // String to store the south fan message
+  // serializeJsonPretty(masterBedroomFanSouth.pubMessage, south); // Serialize the south fan message to JSON format
+  // server.on("/fans", HTTP_GET, [&](){server.send(200, "text/plain", "North Fan: " + north + "\nSouth Fan: " + south);}); // Send the fan messages to the client
+  
+
 }

@@ -6,6 +6,7 @@
 #include <ArduinoJson.h>
 #include "secrets.h"
 
+
 // MQTT client
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
@@ -24,6 +25,7 @@ void setupMQTT(const char* mqttServer, int mqttPort, void callback(char* topic, 
   mqttClient.setCallback(callback);
 }
 
+
 /**
  * @brief Reconnects to the MQTT broker.
  * 
@@ -32,7 +34,7 @@ void setupMQTT(const char* mqttServer, int mqttPort, void callback(char* topic, 
  * If the connection is successful, it subscribes to specific MQTT topics.
  * If the connection fails, it prints an error message and retries after a delay of 5 seconds.
  */
-void reconnect()
+void reconnect(std::vector<String> subTopics)
 {
   Serial.println("Connecting to MQTT broker...");
 
@@ -40,16 +42,21 @@ void reconnect()
   {
     Serial.println("Reconnecting to MQTT broker...");
 
-    String clientId = "Upstairs_Fans";
+    String clientId = MQTT_CLIENT_ID;
     clientId += String(random(0xffff), HEX);
 
     if (mqttClient.connect(clientId.c_str(), MQTT_USER ,MQTT_PASSWORD))
     {
       Serial.println("Connected to MQTT broker.");
 
-      mqttClient.subscribe("HA/thermostat");
-      mqttClient.subscribe("HA/masterBed/fanControl");
-      mqttClient.subscribe("device/masterBed/tempHumid");
+      for (int i = 0; i < subTopics.size(); i++)
+      {
+        mqttClient.subscribe(subTopics[i].c_str());
+      }
+
+      // mqttClient.subscribe("HA/thermostat");
+      // mqttClient.subscribe("HA/masterBed/fanControl");
+      // mqttClient.subscribe("device/masterBed/tempHumid");
     }
     else
     {
@@ -79,11 +86,11 @@ void mqttPublish(const char* topic, JsonDocument message)
  * @brief Performs the MQTT loop, checking the connection status and reconnecting if necessary.
  *        This function should be called periodically to ensure proper MQTT communication.
  */
-void mqttLoop()
+void mqttLoop(std::vector<String> subTopics)
 {
   if (!mqttClient.connected())
   {
-    reconnect();
+    reconnect(subTopics);
   }
   mqttClient.loop();
 }
