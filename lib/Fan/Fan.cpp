@@ -61,12 +61,13 @@ void Fan::buildPubMessage()
   pubMessage["Duty Cycle"] = _dutyCycle;
   pubMessage["Manual"] = manual;
   pubMessage["Manual Speed"] = manSpeed;
-  pubMessage["Room Temp"] = rTemp;
-  pubMessage["Temp Offset"] = tempOffset;
-  pubMessage["Duty Cycle"] = _dutyCycle;
   pubMessage["PWM Pin"] = _pwmPin;
   pubMessage["Speed Pin"] = _speedPin;
   pubMessage["autoScaleMax"] = autoScaleMax;
+  pubMessage["Room Temp"] = rTemp;
+  pubMessage["thermostatTemp"] = tTemp;
+  pubMessage["Temp Offset"] = tempOffset;
+  pubMessage["temp and offset"] = tTemp + tempOffset;
 }
 
 /**
