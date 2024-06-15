@@ -10,8 +10,8 @@ const char* password = WIFI_PASSWORD;
 
 IPAddress staticIP(STATIC_IP_ADDRESS);
 
-Fan masterBedroomFanNorth(12, 14, 5000, 0, 8);
-Fan masterBedroomFanSouth(27, 26, 5000, 1, 8);
+Fan masterBedroomFanNorth(4, 16, 5000, 0, 8);
+Fan masterBedroomFanSouth(17, 5, 5000, 1, 8);
 
 // MQTT topics to subscribe to
 std::vector<String> subTopics = {"HA/thermostat", "HA/masterBed/fanControl", "device/masterBed/tempHumid"};

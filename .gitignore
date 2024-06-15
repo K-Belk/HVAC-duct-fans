@@ -6,7 +6,7 @@
 .vscode/tasks.json 
 .vscode
 include/secrets.h
-include/secrets.h
+
 
 # Prerequisites
 *.d
@@ -34,7 +34,7 @@ include/secrets.h
 *.lai
 *.la
 *.a
-*.lib
+# *.lib
 
 # Executables
 *.exe

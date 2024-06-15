@@ -6,11 +6,9 @@
 #include <ArduinoJson.h>
 #include "secrets.h"
 
-
 // MQTT client
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
-
 
 /**
  * Sets up the MQTT client with the specified server and port.
@@ -24,7 +22,6 @@ void setupMQTT(const char* mqttServer, int mqttPort, void callback(char* topic, 
   mqttClient.setServer(mqttServer, mqttPort);
   mqttClient.setCallback(callback);
 }
-
 
 /**
  * @brief Reconnects to the MQTT broker.
