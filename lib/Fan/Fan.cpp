@@ -29,26 +29,29 @@ Fan::Fan(int pin, int speedPin, int freq, int fanChannel, int resolution)
  * @param message The JSON message to parse.
  */
 void Fan::parseMessage(JsonDocument message)
-{
-  // if message is "roomTemp" then set the room temp. else if the message is fan control the set the fan control
-  if (strcmp(message["message"], "roomTemp") == 0)
-  {
-    rTemp = message["temperature"];
+try {
+    if (strcmp(message["message"], "roomTemp") == 0)
+    {
+      rTemp = message["temperature"];
+      
+    }
+    else if (strcmp(message["message"], "fanControl") == 0)
+    {
+      manual = strcmp(message["manual"], "on") == 0;
+      manSpeed = atoi(message["manualSpeed"]);
+      tempOffset = atoi(message["tempOffset"]);
+      autoScaleMax = atoi(message["autoScaleMax"]);
+    }
   }
-  else if (strcmp(message["message"], "fanControl") == 0)
-  {
-    manual = strcmp(message["manual"], "on") == 0;
-    manSpeed = atoi(message["manualSpeed"]);
-    tempOffset = atoi(message["tempOffset"]);
-    autoScaleMax = atoi(message["autoScaleMax"]);
-    debug = strcmp(message["debug"], "on") == 0;
-  }
-  else
+  catch(const std::exception& e)
   {
     pubMessage["error"] = true;
+    //  error message = invalid message + message name
     pubMessage["errorMessage"] = "Invalid message: ";
+    serializeJsonPretty(pubMessage, Serial);
+    Serial.println();
   }
-}
+
 
 /**
  * @brief Builds the public message for the fan.
