@@ -10,8 +10,11 @@ const char* password = WIFI_PASSWORD;
 
 IPAddress staticIP(STATIC_IP_ADDRESS);
 
-Fan masterBedroomFanNorth(18, 19, 5000, 0, 8);
+Fan masterBedroomFanNorth(4, 16, 5000, 0, 8);
 Fan masterBedroomFanSouth(17, 5, 5000, 1, 8);
+
+// MQTT topics to subscribe to
+std::vector<String> subTopics = {"HA/thermostat", "HA/masterBed/fanControl", "device/masterBed/tempHumid"};
 
 long lastMsg = 0; // Last time a message was sent to the MQTT broker
 
@@ -33,7 +36,7 @@ char* state = new char[32]; // State of the thermostat
  * @param payload The payload of the MQTT message.
  * @param length The length of the payload.
  */
-void callback(char* topic, byte* payload, unsigned int length)
+void messageCallback(char* topic, byte* payload, unsigned int length)
 {
   JsonDocument doc;
   deserializeJson(doc, payload, length);
@@ -42,7 +45,7 @@ void callback(char* topic, byte* payload, unsigned int length)
   if (strcmp(topic, "HA/thermostat") == 0)
   {
     strlcpy(state, doc["state"], 32);
-    currentTemp = atoi(doc["currentTemp"]);
+    currentTemp = atoff(doc["currentTemp"]);
     strlcpy(thermoFan, doc["fan"], 32);
     targetTempHigh = atoi(doc["targetTempHigh"]);
     targetTempLow = atoi(doc["targetTempLow"]);
@@ -53,14 +56,12 @@ void callback(char* topic, byte* payload, unsigned int length)
     doc["message"] = "fanControl";
     masterBedroomFanNorth.parseMessage(doc);
     masterBedroomFanSouth.parseMessage(doc);
-    Serial.println("Fan control message received");
   }
   else if (strcmp(topic, "device/masterBed/tempHumid") == 0)
   {
     doc["message"] = "roomTemp";
     masterBedroomFanNorth.parseMessage(doc);
     masterBedroomFanSouth.parseMessage(doc);
-    // Serial.println("Room temperature message received");
   }
   else
   {
@@ -85,7 +86,7 @@ void setup(void) {
   setupWiFi(ssid, password, staticIP); // Setup WiFi connection
   setupOTA(); // Setup OTA updates
 
-  setupMQTT(mqttServer, mqttPort, callback); // Setup MQTT client
+  setupMQTT(mqttServer, mqttPort, messageCallback); // Setup MQTT client
 }
 
 /**
@@ -99,15 +100,18 @@ void loop(void) {
 
   server.handleClient(); // Handle client requests
   ElegantOTA.loop(); // Perform OTA updates
-  mqttLoop(); // Handle MQTT messages
+  mqttLoop(subTopics); // Handle MQTT messages
 
   if (now - lastMsg > 1000) {
     lastMsg = now;
     // Publish the current temperature to the MQTT broker
     mqttPublish("device/masterBed/fan/north", masterBedroomFanNorth.pubMessage); // Publish the north fan message
     mqttPublish("device/masterBed/fan/south", masterBedroomFanSouth.pubMessage); // Publish the south fan message
-  }
-  masterBedroomFanNorth.loop(currentTemp); // Update the state of the north fan
-  masterBedroomFanSouth.loop(currentTemp); // Update the state of the south fan
+  } 
   
+
+
+  masterBedroomFanNorth.loop(currentTemp); // Update the state of the north fan
+  masterBedroomFanSouth.loop(currentTemp); // Update the state of the south fan  
+
 }

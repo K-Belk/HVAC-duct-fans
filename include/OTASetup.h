@@ -1,7 +1,6 @@
 #ifndef OTASetup_h
 #define OTASetup_h
 
-
 #include <WiFi.h>
 #include <ElegantOTA.h>
 #include <WebServer.h>
@@ -53,7 +52,6 @@ void setupWiFi(const char* ssid, const char* password, IPAddress staticIP , IPAd
   server.on("/", []() {
     server.send(200, "text/plain", "Hi! This is ElegantOTA Demo.");
   });
-
 }
 
 /**
